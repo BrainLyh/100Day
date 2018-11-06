@@ -89,6 +89,13 @@ for i in range(1,20):
         except Exception as e:
             print("现在查询到: " + chr(j) + " !")
             
+            
+使用requests.get(url)返回response对象。该对象包含服务返回的所有信息。
+我们可以使用该对象进行操作，比如得到网页信息:r.text,查看网页的状态信息：r.status_code,还有r.content,r,apparent_encoding等常用的属性。
+
+代码的try,except语句的含义是：尝试去获取网页信息，如果超时，即执行了sleep语句，则将错误信息保存在e中，输出友好的错误信息。显然
+这个版本的错误控制完全没有起到作用。
+
 写代码的过程中出现的问题有：
 没有求数据库名的长度，认为这个功能不是很实用。
 查询表名的时候问题很大。查询一个之后循环就终止了，还没有解决。
