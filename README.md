@@ -1,2 +1,2 @@
-# 100Day
+# 100Days
 program challenge
