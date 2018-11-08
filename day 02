@@ -1,0 +1,23 @@
+今天事情比较多就写了一个python发送post请求的代码
+
+import requests
+import base64
+
+def main():
+    s = requests.session()
+    text = s.get("https://e63458071383444780e45e82fd31a6de508dec6df78e4b5d.game.ichunqiu.com/")
+    header = text.headers["flag"]
+    flag = base64.b64decode(header)
+    d = str(flag).split(":")
+    flag1 = base64.b64decode(d[1])
+    key = {"ichunqiu":flag1}
+    response = requests.post("http://e63458071383444780e45e82fd31a6de508dec6df78e4b5d.game.ichunqiu.com/", data=key)
+    print(response.text)
+
+if __name__ == '__main__':
+    main()
+    
+    这个代码调试过程中还出现问题，get请求一直连接不上。
+    
+    
+    
