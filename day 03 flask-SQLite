@@ -1,0 +1,54 @@
+
+import os
+basedir = os.path.abspath(os.path.dirname(__file__))
+
+
+class Config(object):
+	SECRET_KEY = os.environ.get('SECRET_KEY') or 'you-will-niver-guess'
+	SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
+		'sqlite:///' + os.path.join(basedir, 'app.db')
+	SQLALCHEMY_TRACK_MODIFICATIONS = False	
+  
+Flask-SQLAlchemy插件从SQLALCHEMY_DATABASE_URI配置变量中获取应用的数据库的位置。 
+当回顾第三章可以发现，首先从环境变量获取配置变量，未获取到就使用默认值。
+
+随着应用的不断增长，很可能会新增、修改或删除数据库结构。 
+Alembic（Flask-Migrate使用的迁移框架）将以一种不需要重新创建数据库的方式进行数据库结构的变更。
+
+这是一个看起来相当艰巨的任务，为了实现它，Alembic维护一个数据库迁移存储库，它是一个存储迁移脚本的目录。
+每当对数据库结构进行更改后，都需要向存储库中添加一个包含更改的详细信息的迁移脚本。 
+当应用这些迁移脚本到数据库时，它们将按照创建的顺序执行.
+使用 flask db init 来创建迁移储存库。需要设置 FLASK_APP = microblog.py
+
+有两种方法来创建数据库迁移：手动或自动。 要自动生成迁移，Alembic会将数据库模型定义的数据库模式
+与数据库中当前使用的实际数据库模式进行比较。 
+然后，使用必要的更改来填充迁移脚本，以使数据库模式与应用程序模型匹配。
+
+flask db downgrade命令可以回滚上次的迁移。 虽然在生产系统上不太可能需要此选项，
+但在开发过程中可能会发现它非常有用。 你可能已经生成了一个迁移脚本并将其应用，
+只是发现所做的更改并不完全是你所需要的。 在这种情况下，可以降级数据库，删除迁移脚本，然后生成一个新的来替换它.
+
+from datetime import datetime
+from app import db
+
+class User(db.Model):
+	id = db.Column(db.Integer, primary_key = True)
+	username = db.Column(db.String(64), index = True, unique = True)
+	email = db.Column(db.String(120), index = True, unique = True)
+	password_hash = db.Column(db.String(128))
+	posts = db.relationship('Post', backref = 'author', lazy = 'dynamic')
+
+
+	def __repr__(self):
+		return '<User {}>'.format(self.username)
+
+class Post(db.Model):
+	id = db.Column(db.Integer, primary_key = True)
+	body = db.Column(db.String(140))
+	timestamp = db.Column(db.DateTime, index = True, default = datetime.utcnow)
+	user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+	def __repr__(self):
+		return '<Post {}>'.format(self.body)
+    
+   使用python第三方库创建字段的方式是使用了创建方法的实例方式。
