@@ -1,0 +1,26 @@
+使用第三方库 qrcode 来实现将信息写入二维码 
+代码如下
+
+import qrcode
+import sys
+import os
+
+QRImagePath = os.getcwd() + '/qrcode.png'
+qr = qrcode.QRCode(
+    version=1,
+    error_correction=qrcode.constants.ERROR_CORRECT_L,
+    #二维码的容错系数，容错系数越高，生成的二维码可允许的残缺率越大，数据主要保存在四个角上
+    #一共有L 7%,M(default) 15%,Q 25%,H 30%,四个等级
+
+    box_size=20,
+    border=4,
+)
+qr.add_data('Liu yu hang')
+qr.make(fit=True)
+
+img = qr.make_image(fill_color="black", back_color="white")
+img.save("qrcode.png")
+
+执行代码在当前文件目录下生成png文件，用手机扫描之后得到对应信息。
+
+下一步是写出解析二维码的代码。
