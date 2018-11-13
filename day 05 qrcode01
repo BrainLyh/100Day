@@ -1,0 +1,63 @@
+对上个版本做了修改
+现在的版本可以在生成之后打开图片，5秒后自动删除生成的图片
+
+import qrcode
+import sys
+import os
+import time
+
+QRImagePath = os.getcwd() + '/qrcode.png'
+#os.getcwd() 返回当前工作目录
+qr = qrcode.QRCode(
+    version=1,
+    error_correction=qrcode.constants.ERROR_CORRECT_L,
+    #二维码的容错系数，容错系数越高，生成的二维码可允许的残缺率越大，数据主要保存在四个角上
+    #一共有L 7%,M(default) 15%,Q 25%,H 30%,四个等级
+
+    box_size=20,
+    border=4,
+)
+data = input()
+qr.add_data(data)
+qr.make(fit=True)
+
+img = qr.make_image(fill_color="black", back_color="white")
+img.save("qrcode.png")
+
+if sys.platform.find('darwin') >= 0:
+    #mac
+    os.system('open %s' % QRImagePath)
+
+elif sys.platform.find('linux') >= 0:
+    #Linux
+    os.system('xdg-open %s' % QRImagePath)
+else:
+    #windows
+    os.system('call %s' % QRImagePath)
+
+time.sleep(5)
+os.remove(QRImagePath)
+# 每过5秒就删除图片
+
+sys.platform获取平台信息，在这里用来判断操作系统，选择用合适的打开方式打开图片。
+这里的if 语句想删掉 >=0,但是却完不成判断，原来的猜想是匹配到就返回True，匹配不到不到返回Faluse，
+删掉之后默认True时执行IF语句，没想到返回值不是这样的
+
+>>> import sys
+>>> s = sys.platform.find('darwin')
+>>> s
+-1
+>>> s = sys.platform.find('linux')
+>>> s
+-1
+>>> s = sys.platform.find('windows')
+>>> s
+-1
+>>> s = sys.platform.find('win')
+>>> s
+0
+
+没有匹配到返回值是-1，匹配到返回 0。
+解码的第三方库只支持python2.7，所以还没有写。
+针对生成二维码，看到网上有人用pyqt4 写了一个GUI，搞得我也想写一个玩玩。但是，下载对应的库就下载了半天，垃圾网速。
+到现在还没下好...
